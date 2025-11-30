@@ -16,8 +16,8 @@ def main():
     sns.set_style("whitegrid")
     sns.set_context("talk")
     
-    # Create figure - size doesn't matter, we'll resize later
-    fig, ax = plt.subplots(figsize=(8, 8))
+    # Set figure size to EXACTLY 512 pixels (512/100 DPI = 5.12 inches)
+    fig, ax = plt.subplots(figsize=(5.12, 5.12), dpi=100)
     
     sns.violinplot(
         data=df,
@@ -33,29 +33,27 @@ def main():
     ax.set_xlabel("Support Tier")
     ax.set_ylabel("Resolution Time (hours)")
     
-    # Save to temporary file first
-    plt.tight_layout()
-    plt.savefig("temp_chart.png", dpi=100, bbox_inches='tight')
+    # DON'T use tight_layout or bbox_inches - they change dimensions!
+    # Save directly without any bbox adjustments
+    plt.savefig("chart.png", dpi=100)
     plt.close()
     
-    # Now use PIL to resize to EXACTLY 512x512
-    img = Image.open("temp_chart.png")
+    # Now verify and force resize if needed
+    img = Image.open("chart.png")
+    width, height = img.size
     
-    # Resize to exact dimensions
-    img_resized = img.resize((512, 512), Image.LANCZOS)
+    print(f"Initial save dimensions: {width} x {height} pixels")
     
-    # Save final image
-    img_resized.save("chart.png")
+    if width != 512 or height != 512:
+        print(f"Resizing from {width}x{height} to 512x512...")
+        # Force exact size
+        img = img.resize((512, 512), Image.LANCZOS if hasattr(Image, 'LANCZOS') else 1)
+        img.save("chart.png")
+        print("Resized and saved!")
     
-    # Clean up temp file
-    import os
-    os.remove("temp_chart.png")
-    
-    print("Chart saved successfully as chart.png (512x512 pixels)")
-    
-    # Verify dimensions
+    # Final verification
     final_img = Image.open("chart.png")
-    print(f"Final dimensions: {final_img.size[0]} x {final_img.size[1]} pixels")
+    print(f"FINAL dimensions: {final_img.size[0]} x {final_img.size[1]} pixels")
 
 if __name__ == "__main__":
     main()
