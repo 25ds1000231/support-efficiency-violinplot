@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
 
-# Generate synthetic support efficiency data
+# Synthetic support efficiency data - IT fastest, HR slowest
 np.random.seed(42)
 departments = ['Sales', 'IT', 'HR', 'Finance']
 data = []
@@ -22,22 +22,25 @@ for dept in departments:
 
 df = pd.DataFrame(data)
 
-# Professional styling with minimal padding for exact dimensions
+# Exact Seaborn styling - NO manual resizing
 sns.set_style('whitegrid')
 sns.set_context('paper', font_scale=1.2)
-fig, ax = plt.subplots(figsize=(8, 8))
 
-# Violinplot
-sns.violinplot(data=df, x='Department', y='Resolution_Time_Hours', 
-               palette='Set2', ax=ax)
+# 8x8 inches @ 64 DPI = exactly 512x512 pixels
+plt.figure(figsize=(8, 8))
 
-# Labels and tight layout
-ax.set_title('Support Ticket Resolution Time by Department (Hours)')
-ax.set_xlabel('Department')
-ax.set_ylabel('Resolution Time (Hours)')
-ax.tick_params(axis='x', rotation=45)
+# PURE sns.violinplot - no ax= or subplots interference
+sns.violinplot(data=df, x='Department', y='Resolution_Time_Hours', palette='Set2')
 
-plt.tight_layout(pad=0.5)
-plt.savefig('chart.png', dpi=64, bbox_inches='tight', pad_inches=0, 
+plt.title('Support Ticket Resolution Time by Department (Hours)')
+plt.xlabel('Department')
+plt.ylabel('Resolution Time (Hours)')
+plt.xticks(rotation=45)
+
+# Critical: tight_layout BEFORE savefig, minimal padding
+plt.tight_layout(pad=0.2)
+plt.savefig('chart.png', dpi=64, bbox_inches='tight', pad_inches=0.1, 
             facecolor='white', edgecolor='none')
 plt.close()
+
+print("Generated chart.png - Verify: PIL.Image.open('chart.png').size == (512, 512)")
