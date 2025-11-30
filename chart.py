@@ -16,8 +16,8 @@ def main():
     sns.set_style("whitegrid")
     sns.set_context("talk")
     
-    # Create figure with specific size to get close to 512x512
-    fig, ax = plt.subplots(figsize=(6, 6), dpi=100)
+    # Create figure - size doesn't matter, we'll resize later
+    fig, ax = plt.subplots(figsize=(8, 8))
     
     sns.violinplot(
         data=df,
@@ -33,30 +33,29 @@ def main():
     ax.set_xlabel("Support Tier")
     ax.set_ylabel("Resolution Time (hours)")
     
-    # Tight layout to remove extra whitespace
+    # Save to temporary file first
     plt.tight_layout()
+    plt.savefig("temp_chart.png", dpi=100, bbox_inches='tight')
+    plt.close()
     
-    # Save to a temporary buffer first
-    fig.canvas.draw()
+    # Now use PIL to resize to EXACTLY 512x512
+    img = Image.open("temp_chart.png")
     
-    # Convert to a Pillow image
-    img = Image.frombytes(
-        "RGB",
-        fig.canvas.get_width_height(),
-        fig.canvas.tostring_rgb()
-    )
-    plt.close(fig)
+    # Resize to exact dimensions
+    img_resized = img.resize((512, 512), Image.LANCZOS)
     
-    # Resize to EXACTLY 512x512 using LANCZOS (or Resampling.LANCZOS for newer Pillow)
-    try:
-        # For newer Pillow versions (>=10.0.0)
-        img = img.resize((512, 512), Image.Resampling.LANCZOS)
-    except AttributeError:
-        # For older Pillow versions
-        img = img.resize((512, 512), Image.LANCZOS)
+    # Save final image
+    img_resized.save("chart.png")
     
-    img.save("chart.png")
+    # Clean up temp file
+    import os
+    os.remove("temp_chart.png")
+    
     print("Chart saved successfully as chart.png (512x512 pixels)")
+    
+    # Verify dimensions
+    final_img = Image.open("chart.png")
+    print(f"Final dimensions: {final_img.size[0]} x {final_img.size[1]} pixels")
 
 if __name__ == "__main__":
     main()
