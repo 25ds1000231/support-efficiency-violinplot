@@ -1,61 +1,43 @@
-# chart_imageio.py
-# Email: 25ds1000231@ds.study.iitm.ac.in
-import numpy as np
-import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
-import imageio.v3 as iio
-from PIL import Image
+import pandas as pd
+import numpy as np
 
-def main():
-    np.random.seed(42)
-    df = pd.DataFrame({
-        "Tier": np.random.choice(["Tier 1", "Tier 2", "Tier 3"], 500),
-        "Resolution_Time": np.random.lognormal(mean=1.5, sigma=0.5, size=500)
-    })
-    
-    sns.set_style("whitegrid")
-    sns.set_context("talk")
-    
-    fig, ax = plt.subplots(figsize=(8, 8))
-    
-    sns.violinplot(
-        data=df,
-        x="Tier",
-        y="Resolution_Time",
-        palette="Set2",
-        inner="quartile",
-        cut=0,
-        ax=ax
-    )
-    
-    ax.set_title("Support Resolution Time by Tier")
-    ax.set_xlabel("Support Tier")
-    ax.set_ylabel("Resolution Time (hours)")
-    plt.tight_layout()
-    
-    # Save using matplotlib first
-    plt.savefig("temp.png", dpi=100, bbox_inches='tight')
-    plt.close()
-    
-    # Read with imageio
-    img_array = iio.imread("temp.png")
-    
-    # Resize using PIL
-    img = Image.fromarray(img_array)
-    img = img.resize((512, 512), Image.Resampling.LANCZOS if hasattr(Image.Resampling, 'LANCZOS') else 1)
-    
-    # Convert back to array and save with imageio
-    img_array_resized = np.array(img)
-    iio.imwrite("chart.png", img_array_resized)
-    
-    # Verify
-    import os
-    os.remove("temp.png")
-    
-    final = Image.open("chart.png")
-    print(f"Final size: {final.size}")
-    final.close()
+# Generate synthetic data for support efficiency analysis
+np.random.seed(42)
+departments = ['Sales', 'IT', 'HR', 'Finance']
+data = []
+for dept in departments:
+    if dept == 'IT':
+        times = np.random.normal(2.5, 0.8, 200)
+    elif dept == 'Sales':
+        times = np.random.normal(4.0, 1.2, 200)
+    elif dept == 'HR':
+        times = np.random.normal(6.0, 1.5, 200)
+    else:  # Finance
+        times = np.random.normal(5.0, 1.0, 200)
+    times = np.maximum(times, 0)  # No negative times
+    for t in times:
+        data.append({'Department': dept, 'Resolution_Time_Hours': t})
 
-if __name__ == "__main__":
-    main()
+df = pd.DataFrame(data)
+
+# Professional Seaborn styling
+sns.set_style('whitegrid')
+sns.set_context('paper', font_scale=1.2)
+
+# Create figure exactly 8x8 inches for 512x512 at dpi=64
+plt.figure(figsize=(8, 8))
+
+# Violinplot with professional palette
+sns.violinplot(data=df, x='Department', y='Resolution_Time_Hours', palette='Set2')
+
+# Labels and title
+plt.title('Support Ticket Resolution Time by Department (Hours)')
+plt.xlabel('Department')
+plt.ylabel('Resolution Time (Hours)')
+plt.xticks(rotation=45)
+
+# Save as exactly 512x512 PNG
+plt.savefig('chart.png', dpi=64, bbox_inches='tight', facecolor='white')
+plt.close()
