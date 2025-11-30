@@ -16,8 +16,8 @@ def main():
     sns.set_style("whitegrid")
     sns.set_context("talk")
     
-    # Set figure size to EXACTLY 512 pixels (512/100 DPI = 5.12 inches)
-    fig, ax = plt.subplots(figsize=(5.12, 5.12), dpi=100)
+    # Create figure
+    fig, ax = plt.subplots(figsize=(8, 8))
     
     sns.violinplot(
         data=df,
@@ -33,27 +33,40 @@ def main():
     ax.set_xlabel("Support Tier")
     ax.set_ylabel("Resolution Time (hours)")
     
-    # DON'T use tight_layout or bbox_inches - they change dimensions!
-    # Save directly without any bbox adjustments
-    plt.savefig("chart.png", dpi=100)
+    plt.tight_layout()
+    
+    # Save to temporary file
+    plt.savefig("temp_chart.png", dpi=100)
     plt.close()
     
-    # Now verify and force resize if needed
-    img = Image.open("chart.png")
-    width, height = img.size
+    # Open with PIL and FORCE resize to 512x512
+    img = Image.open("temp_chart.png")
     
-    print(f"Initial save dimensions: {width} x {height} pixels")
+    # Create new image with EXACT size
+    img_512 = img.resize((512, 512), Image.LANCZOS if hasattr(Image, 'LANCZOS') else 1)
     
-    if width != 512 or height != 512:
-        print(f"Resizing from {width}x{height} to 512x512...")
-        # Force exact size
-        img = img.resize((512, 512), Image.LANCZOS if hasattr(Image, 'LANCZOS') else 1)
-        img.save("chart.png")
-        print("Resized and saved!")
+    # Save the resized image
+    img_512.save("chart.png", "PNG")
     
-    # Final verification
-    final_img = Image.open("chart.png")
-    print(f"FINAL dimensions: {final_img.size[0]} x {final_img.size[1]} pixels")
+    # Close images
+    img.close()
+    img_512.close()
+    
+    # Delete temp file
+    import os
+    if os.path.exists("temp_chart.png"):
+        os.remove("temp_chart.png")
+    
+    # Verify final size
+    with Image.open("chart.png") as verify:
+        w, h = verify.size
+        print(f"Chart saved as chart.png")
+        print(f"Dimensions: {w} x {h} pixels")
+        
+        if w == 512 and h == 512:
+            print("✓ SUCCESS: Image is exactly 512x512 pixels!")
+        else:
+            print(f"✗ ERROR: Image is {w}x{h}, not 512x512")
 
 if __name__ == "__main__":
     main()
