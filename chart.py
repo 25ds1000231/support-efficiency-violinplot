@@ -1,30 +1,23 @@
-# chart.py
+# chart_imageio.py
 # Email: 25ds1000231@ds.study.iitm.ac.in
 import numpy as np
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
+import imageio.v3 as iio
 from PIL import Image
-import io
 
 def main():
-    print("Starting chart generation...")
-    
     np.random.seed(42)
     df = pd.DataFrame({
         "Tier": np.random.choice(["Tier 1", "Tier 2", "Tier 3"], 500),
         "Resolution_Time": np.random.lognormal(mean=1.5, sigma=0.5, size=500)
     })
     
-    print("Data created successfully")
-    
     sns.set_style("whitegrid")
     sns.set_context("talk")
     
-    # Create figure
-    fig, ax = plt.subplots(figsize=(10, 10))
-    
-    print("Creating violin plot...")
+    fig, ax = plt.subplots(figsize=(8, 8))
     
     sns.violinplot(
         data=df,
@@ -39,71 +32,30 @@ def main():
     ax.set_title("Support Resolution Time by Tier")
     ax.set_xlabel("Support Tier")
     ax.set_ylabel("Resolution Time (hours)")
-    
     plt.tight_layout()
     
-    # Save to BytesIO buffer (in memory, not to disk)
-    print("Saving to memory buffer...")
-    buf = io.BytesIO()
-    plt.savefig(buf, format='png', dpi=100)
-    buf.seek(0)
+    # Save using matplotlib first
+    plt.savefig("temp.png", dpi=100, bbox_inches='tight')
     plt.close()
     
-    print("Opening image from buffer...")
-    # Open from memory
-    img = Image.open(buf)
-    print(f"Original size: {img.size[0]} x {img.size[1]}")
+    # Read with imageio
+    img_array = iio.imread("temp.png")
     
-    # Resize to EXACTLY 512x512
-    print("Resizing to 512x512...")
-    img_resized = img.resize((512, 512), Image.LANCZOS if hasattr(Image, 'LANCZOS') else 1)
-    print(f"Resized to: {img_resized.size[0]} x {img_resized.size[1]}")
+    # Resize using PIL
+    img = Image.fromarray(img_array)
+    img = img.resize((512, 512), Image.Resampling.LANCZOS if hasattr(Image.Resampling, 'LANCZOS') else 1)
     
-    # Save as PNG with exact dimensions
-    print("Saving chart.png...")
-    img_resized.save("chart.png", format='PNG', optimize=False)
+    # Convert back to array and save with imageio
+    img_array_resized = np.array(img)
+    iio.imwrite("chart.png", img_array_resized)
     
-    # Close buffer
-    buf.close()
+    # Verify
+    import os
+    os.remove("temp.png")
     
-    print("\nVerifying saved file...")
-    # Verify the actual saved file
-    verify = Image.open("chart.png")
-    w, h = verify.size
-    verify.close()
-    
-    print(f"\n{'='*50}")
-    print(f"FINAL RESULT:")
-    print(f"File: chart.png")
-    print(f"Dimensions: {w} x {h} pixels")
-    print(f"{'='*50}\n")
-    
-    if w == 512 and h == 512:
-        print("✓ SUCCESS: Image is exactly 512x512 pixels!")
-        return 0
-    else:
-        print(f"✗ ERROR: Image is {w}x{h} instead of 512x512")
-        print("\nAttempting force fix...")
-        
-        # One more attempt - force it
-        force_img = Image.open("chart.png")
-        force_resized = force_img.resize((512, 512), 1)
-        force_resized.save("chart.png", format='PNG')
-        force_img.close()
-        force_resized.close()
-        
-        # Check again
-        final_check = Image.open("chart.png")
-        final_w, final_h = final_check.size
-        final_check.close()
-        print(f"After force fix: {final_w} x {final_h}")
-        
-        if final_w == 512 and final_h == 512:
-            print("✓ Force fix successful!")
-            return 0
-        else:
-            print("✗ Force fix failed")
-            return 1
+    final = Image.open("chart.png")
+    print(f"Final size: {final.size}")
+    final.close()
 
 if __name__ == "__main__":
-    exit(main())
+    main()
