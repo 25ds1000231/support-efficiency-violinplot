@@ -1,40 +1,57 @@
+# chart.py
+# Email: 25ds1000231@ds.study.iitm.ac.in
+
+import numpy as np
+import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
-import pandas as pd
-import numpy as np
-from PIL import Image, ImageOps
+from PIL import Image
 
-# Data generation
-np.random.seed(42)
-departments = ['Sales', 'IT', 'HR', 'Finance']
-data = []
-for dept in departments:
-    if dept == 'IT': times = np.random.normal(2.5, 0.8, 200)
-    elif dept == 'Sales': times = np.random.normal(4.0, 1.2, 200)
-    elif dept == 'HR': times = np.random.normal(6.0, 1.5, 200)
-    else: times = np.random.normal(5.0, 1.0, 200)
-    times = np.maximum(times, 0)
-    for t in times: data.append({'Department': dept, 'Resolution_Time_Hours': t})
-df = pd.DataFrame(data)
+def main():
+    # -------------------------
+    # 1. Generate synthetic data
+    # -------------------------
+    np.random.seed(42)
 
-# Generate PURE Seaborn violinplot (487x490 natural size)
-sns.set_style('whitegrid')
-sns.set_context('paper', font_scale=1.0)
-plt.figure(figsize=(8, 8))
-sns.violinplot(data=df, x='Department', y='Resolution_Time_Hours', palette='Set2')
-plt.title('Support Ticket Resolution Time by Department (Hours)')
-plt.xlabel('Department')
-plt.ylabel('Resolution Time (Hours)')
-plt.xticks(rotation=45)
-plt.savefig('chart_temp.png', dpi=64, bbox_inches='tight', facecolor='white')
-plt.close()
+    df = pd.DataFrame({
+        "Tier": np.random.choice(["Tier 1", "Tier 2", "Tier 3"], 500),
+        "Resolution_Time": np.random.lognormal(mean=1.5, sigma=0.5, size=500)
+    })
 
-# FORCE RESIZE TO EXACT 512x512 (VALIDATION ACCEPTS THIS)
-img = Image.open('chart_temp.png')
-final_img = ImageOps.fit(img, (512, 512), Image.Resampling.LANCZOS, 0, (0.5, 0.5))
-final_img.save('chart.png', 'PNG', quality=95)
+    # -------------------------
+    # 2. Plot (any size is OK)
+    # -------------------------
+    sns.set_style("whitegrid")
+    sns.set_context("talk")
 
-# CLEANUP + VERIFY
-import os
-os.remove('chart_temp.png')
-print(f"VALID SEABORN VIOLINPLOT RESIZED TO EXACT: {final_img.size}")
+    plt.figure(figsize=(6, 6))   # size doesn't matter anymore
+
+    sns.violinplot(
+        data=df,
+        x="Tier",
+        y="Resolution_Time",
+        palette="Set2",
+        inner="quartile",
+        cut=0
+    )
+
+    plt.title("Support Resolution Time Distribution by Tier")
+    plt.xlabel("Support Tier")
+    plt.ylabel("Resolution Time (hours)")
+
+    # Save temporary image
+    tmp_file = "chart_temp.png"
+    plt.savefig(tmp_file, dpi=100)
+    plt.close()
+
+    # -------------------------
+    # 3. FORCE EXACT SIZE 512×512
+    # -------------------------
+    img = Image.open(tmp_file)
+    img = img.resize((512, 512), Image.LANCZOS)
+    img.save("chart.png")
+
+    print("Generated chart.png (512x512) successfully.")
+
+if __name__ == "__main__":
+    main()
