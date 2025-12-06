@@ -5,10 +5,11 @@ import numpy as np
 
 # ---------------------------------------------------------
 # Business Context:
-# A major retail client has engaged Bosco Fay and Mohr to 
-# visualize the distribution and density of customer support 
-# response times across different channels. This plot will 
-# be used in executive presentations and board-level reports.
+# A major retail client has engaged Bosco Fay and Mohr to
+# analyze and visualize customer support response times
+# across support channels. This violin plot will be used in
+# executive presentations, board reports, and strategic
+# planning documents for the upcoming Quarterly Review.
 # ---------------------------------------------------------
 
 # ------------------------------------
@@ -33,31 +34,32 @@ df = pd.DataFrame(data)
 df["ResponseTime"] = df["ResponseTime"].clip(lower=0)
 
 # ------------------------------------
-# Apply Seaborn best practices
+# Apply Seaborn Best Practices
 # ------------------------------------
-sns.set_style("whitegrid")       # Professional appearance
-sns.set_context("talk")          # Presentation-ready font sizes
+sns.set_style("whitegrid")    # Clean, professional
+sns.set_context("talk")       # Presentation-ready text sizes
 
 # ------------------------------------
-# Create the figure (512x512 px)
+# Create the figure (EXACT 512x512 px)
 # ------------------------------------
-plt.figure(figsize=(8, 8))       # 8 in × 8 in → 512 px × 512 px at 64 DPI
+# 8 inches * 64 dpi = 512 px
+fig = plt.figure(figsize=(8, 8), dpi=64)
 
 # ------------------------------------
-# Create Violin Plot
+# Violin Plot
 # ------------------------------------
 sns.violinplot(
     data=df,
     x="Channel",
     y="ResponseTime",
-    palette="Set2",   # Professional, colorblind-friendly palette
+    palette="Set2",    # Colorblind-friendly, professional
     cut=0,
     bw=0.3,
     linewidth=1.2
 )
 
 # ------------------------------------
-# Style the chart for executive use
+# Executive-Level Styling
 # ------------------------------------
 plt.title(
     "Customer Support Response Time Distribution by Channel\n"
@@ -69,24 +71,29 @@ plt.title(
 plt.xlabel("Support Channel", fontsize=14)
 plt.ylabel("Response Time (minutes)", fontsize=14)
 
-plt.grid(axis='y', linestyle='--', alpha=0.6)
+# Subtle y-grid lines
+plt.grid(axis="y", linestyle="--", alpha=0.6)
 
-# Business-context annotation
+# Business annotation
 plt.text(
-    0.5, -0.25,
-    "Visualizing channel-level response time patterns to guide strategic\n"
-    "recommendations for support efficiency improvements.",
+    0.5, -0.22,
+    "This visualization supports strategic decision-making and highlights\n"
+    "channel-specific response time patterns for the upcoming Quarterly Review.",
     fontsize=12,
     ha="center",
     transform=plt.gca().transAxes
 )
 
-plt.tight_layout()
+# IMPORTANT:
+# - Do NOT use tight_layout()
+# - Do NOT use bbox_inches='tight'
+# Both will shrink the pixel size below 512×512.
 
 # ------------------------------------
-# Save the chart
+# Save the chart (EXACT 512x512 px)
 # ------------------------------------
-plt.savefig("chart.png", dpi=64, bbox_inches="tight")
+fig.savefig("chart.png", dpi=64)
+
 plt.close()
 
-print("Chart saved as chart.png")
+print("Chart saved as chart.png (512 x 512 px)")
