@@ -1,80 +1,92 @@
+import seaborn as sns
+import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
-import seaborn as sns
 
-# --- 1. Seaborn Best Practices: Set Style and Context ---
-sns.set_style("whitegrid")
-sns.set_context("talk") 
+# ---------------------------------------------------------
+# Business Context:
+# A major retail client engaged Bosco Fay and Mohr to analyze
+# the distribution of customer support response times across
+# support channels. This visualization is designed for
+# executive-level presentations and board reports.
+# ---------------------------------------------------------
 
-# --- 2. Data Generation: Create realistic synthetic data ---
-np.random.seed(42) # For reproducibility
+# ------------------------------------
+# Generate synthetic data
+# ------------------------------------
+np.random.seed(42)
 
-channels = ['Email', 'Live Chat', 'Phone']
-data_points = 500 
+channels = ["Email", "Chat", "Phone", "Social Media"]
 
-# Generate data reflecting typical response time efficiency (in minutes):
-email_times = np.random.normal(loc=120, scale=40, size=data_points)
-chat_times = np.random.normal(loc=15, scale=5, size=data_points)
-phone_times = np.random.normal(loc=5, scale=2, size=data_points)
+# Synthetic response-time distributions (in minutes)
+# Modeled to mimic real-world support operations
+data = {
+    "Channel": np.repeat(channels, 250),
+    "ResponseTime": np.concatenate([
+        np.random.normal(loc=45, scale=12, size=250),   # Email: slower, higher variance
+        np.random.normal(loc=12, scale=4, size=250),    # Chat: faster, low variance
+        np.random.normal(loc=20, scale=6, size=250),    # Phone: moderate
+        np.random.normal(loc=30, scale=10, size=250)    # Social Media: variable
+    ])
+}
 
-# Combine the data into a single DataFrame
-df_email = pd.DataFrame({'Response Time (Minutes)': email_times, 'Support Channel': 'Email'})
-df_chat = pd.DataFrame({'Response Time (Minutes)': chat_times, 'Support Channel': 'Live Chat'})
-df_phone = pd.DataFrame({'Response Time (Minutes)': phone_times, 'Support Channel': 'Phone'})
+df = pd.DataFrame(data)
 
-df = pd.concat([df_email, df_chat, df_phone])
+# Ensure no negative response times
+df["ResponseTime"] = df["ResponseTime"].clip(lower=0)
 
-# Ensure all response times are non-negative
-df['Response Time (Minutes)'] = df['Response Time (Minutes)'].clip(lower=0)
+# ------------------------------------
+# Create the figure (512x512 px)
+# ------------------------------------
+plt.figure(figsize=(8, 8))  # 8x8 inches at 64 DPI → 512x512 px
 
-# Filter out extreme synthetic outliers for cleaner visualization
-df = df[df['Response Time (Minutes)'] < 300]
+sns.set_theme(style="whitegrid")
 
-
-# --- 3. Create Violinplot and Set Figure Size ---
-# Set figure size to 8 inches by 8 inches. 
-# At dpi=64, this exactly equals 8 * 64 = 512 pixels.
-plt.figure(figsize=(8, 8)) 
-
-# Create the violin plot
+# ------------------------------------
+# Create Violin Plot
+# ------------------------------------
 sns.violinplot(
-    x='Support Channel', 
-    y='Response Time (Minutes)', 
-    data=df, 
-    palette="viridis", 
-    inner="quartile",
-    linewidth=1 
+    data=df,
+    x="Channel",
+    y="ResponseTime",
+    palette="Set2",
+    cut=0,
+    bw=0.3,
+    linewidth=1.2
 )
 
-# --- 4. Style the Chart: Titles, Labels, and Ticks ---
+# ------------------------------------
+# Style the chart with executive-level polish
+# ------------------------------------
 plt.title(
-    "Customer Support Response Time Distribution by Channel", 
-    fontsize=18, 
-    weight='bold',
-    pad=20 
+    "Distribution of Customer Support Response Times Across Channels\n"
+    "Prepared for Bosco Fay and Mohr – Retail Client Quarterly Business Review",
+    fontsize=14,
+    fontweight="bold"
 )
-plt.xlabel("Support Channel", fontsize=14)
-plt.ylabel("Response Time (Minutes)", fontsize=14)
 
-# Set custom y-axis limits for better focus
-plt.ylim(0, 250) 
+plt.xlabel("Support Channel", fontsize=12)
+plt.ylabel("Response Time (minutes)", fontsize=12)
 
-# --- 5. Critical Fix for 512x512 Pixel Accuracy ---
-# Manually adjust subplot parameters to eliminate internal margins (whitespace) 
-# that are often added by Matplotlib, which prevent exact sizing.
-# The values below are optimized to fill the 8x8 figure area.
-plt.subplots_adjust(left=0.10, right=0.95, top=0.90, bottom=0.10) 
+# Add subtle gridlines for clarity
+plt.grid(axis='y', linestyle='--', alpha=0.6)
 
+# Add annotation for business relevance
+plt.text(
+    0.5, -0.25,
+    "This visualization highlights channel-specific response time patterns to support strategic\n"
+    "recommendations for efficiency improvements ahead of the client's quarterly business review.",
+    fontsize=10,
+    ha="center",
+    transform=plt.gca().transAxes
+)
 
-# --- 6. Save Chart: Exactly 512x512 pixels ---
-# Save using the precise dpi and setting pad_inches=0.0 to strip any remaining external padding.
-# The problematic bbox_inches='tight' parameter is explicitly excluded for this attempt.
-plt.savefig(
-    'chart.png', 
-    dpi=64, 
-    pad_inches=0.0 # Ensures no margin is added to the image file itself
-) 
+plt.tight_layout()
 
-plt.close() 
-print("chart.png created successfully. Please verify it is exactly 512x512 pixels.")
+# ------------------------------------
+# Save output
+# ------------------------------------
+plt.savefig("chart.png", dpi=64, bbox_inches="tight")
+plt.close()
+
+print("Chart saved as chart.png")
