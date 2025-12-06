@@ -5,10 +5,10 @@ import numpy as np
 
 # ---------------------------------------------------------
 # Business Context:
-# A major retail client engaged Bosco Fay and Mohr to analyze
-# the distribution of customer support response times across
-# support channels. This visualization is designed for
-# executive-level presentations and board reports.
+# A major retail client has engaged Bosco Fay and Mohr to 
+# visualize the distribution and density of customer support 
+# response times across different channels. This plot will 
+# be used in executive presentations and board-level reports.
 # ---------------------------------------------------------
 
 # ------------------------------------
@@ -18,29 +18,30 @@ np.random.seed(42)
 
 channels = ["Email", "Chat", "Phone", "Social Media"]
 
-# Synthetic response-time distributions (in minutes)
-# Modeled to mimic real-world support operations
+# Realistic synthetic response-time distributions (in minutes)
 data = {
     "Channel": np.repeat(channels, 250),
     "ResponseTime": np.concatenate([
-        np.random.normal(loc=45, scale=12, size=250),   # Email: slower, higher variance
-        np.random.normal(loc=12, scale=4, size=250),    # Chat: faster, low variance
-        np.random.normal(loc=20, scale=6, size=250),    # Phone: moderate
-        np.random.normal(loc=30, scale=10, size=250)    # Social Media: variable
+        np.random.normal(loc=45, scale=12, size=250),  # Email
+        np.random.normal(loc=12, scale=4,  size=250),  # Chat
+        np.random.normal(loc=20, scale=6,  size=250),  # Phone
+        np.random.normal(loc=30, scale=10, size=250)   # Social Media
     ])
 }
 
 df = pd.DataFrame(data)
-
-# Ensure no negative response times
 df["ResponseTime"] = df["ResponseTime"].clip(lower=0)
+
+# ------------------------------------
+# Apply Seaborn best practices
+# ------------------------------------
+sns.set_style("whitegrid")       # Professional appearance
+sns.set_context("talk")          # Presentation-ready font sizes
 
 # ------------------------------------
 # Create the figure (512x512 px)
 # ------------------------------------
-plt.figure(figsize=(8, 8))  # 8x8 inches at 64 DPI → 512x512 px
-
-sns.set_theme(style="whitegrid")
+plt.figure(figsize=(8, 8))       # 8 in × 8 in → 512 px × 512 px at 64 DPI
 
 # ------------------------------------
 # Create Violin Plot
@@ -49,34 +50,33 @@ sns.violinplot(
     data=df,
     x="Channel",
     y="ResponseTime",
-    palette="Set2",
+    palette="Set2",   # Professional, colorblind-friendly palette
     cut=0,
     bw=0.3,
     linewidth=1.2
 )
 
 # ------------------------------------
-# Style the chart with executive-level polish
+# Style the chart for executive use
 # ------------------------------------
 plt.title(
-    "Distribution of Customer Support Response Times Across Channels\n"
-    "Prepared for Bosco Fay and Mohr – Retail Client Quarterly Business Review",
-    fontsize=14,
+    "Customer Support Response Time Distribution by Channel\n"
+    "Prepared for Bosco Fay and Mohr – Retail Client Quarterly Review",
+    fontsize=18,
     fontweight="bold"
 )
 
-plt.xlabel("Support Channel", fontsize=12)
-plt.ylabel("Response Time (minutes)", fontsize=12)
+plt.xlabel("Support Channel", fontsize=14)
+plt.ylabel("Response Time (minutes)", fontsize=14)
 
-# Add subtle gridlines for clarity
 plt.grid(axis='y', linestyle='--', alpha=0.6)
 
-# Add annotation for business relevance
+# Business-context annotation
 plt.text(
     0.5, -0.25,
-    "This visualization highlights channel-specific response time patterns to support strategic\n"
-    "recommendations for efficiency improvements ahead of the client's quarterly business review.",
-    fontsize=10,
+    "Visualizing channel-level response time patterns to guide strategic\n"
+    "recommendations for support efficiency improvements.",
+    fontsize=12,
     ha="center",
     transform=plt.gca().transAxes
 )
@@ -84,7 +84,7 @@ plt.text(
 plt.tight_layout()
 
 # ------------------------------------
-# Save output
+# Save the chart
 # ------------------------------------
 plt.savefig("chart.png", dpi=64, bbox_inches="tight")
 plt.close()
