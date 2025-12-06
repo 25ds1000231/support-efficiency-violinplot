@@ -1,102 +1,69 @@
 # chart.py
 # Email: 25ds1000231@ds.study.iitm.ac.in
-#
-# This script generates a Seaborn violinplot visualizing
-# support resolution time distributions across tiers and channels
-# for a customer support efficiency analysis.
 
-import numpy as np
-import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
+import pandas as pd
+import numpy as np
+from PIL import Image
 
-
-def generate_synthetic_data(n_samples: int = 500) -> pd.DataFrame:
-    """
-    Generate realistic synthetic data for support efficiency analysis.
-
-    - Support_Tier: Tier 1 / Tier 2 / Tier 3
-    - Support_Channel: Phone / Email / Chat
-    - Resolution_Time_Hours: continuous, skewed (log-normal) with
-      different typical times per tier & channel.
-    """
+def main():
+    # Generate realistic synthetic data for support efficiency analysis
     np.random.seed(42)
-
-    tiers = np.random.choice(
-        ["Tier 1", "Tier 2", "Tier 3"],
-        size=n_samples,
-        p=[0.5, 0.3, 0.2],
-    )
-
-    channels = np.random.choice(
-        ["Phone", "Email", "Chat"],
-        size=n_samples,
-        p=[0.4, 0.35, 0.25],
-    )
-
-    # Base log-mean times by tier (Tier 1 fastest, Tier 3 slowest)
-    tier_to_mean = {"Tier 1": 1.3, "Tier 2": 1.5, "Tier 3": 1.7}
-    channel_to_adjust = {"Phone": 0.0, "Email": 0.1, "Chat": -0.05}
-
-    means = [
-        tier_to_mean[t] + channel_to_adjust[c]
-        for t, c in zip(tiers, channels)
-    ]
-
-    # Generate lognormal resolution times in hours
-    resolution_times = np.random.lognormal(
-        mean=np.array(means),
-        sigma=0.4,
-    )
-
-    df = pd.DataFrame(
-        {
-            "Support_Tier": tiers,
-            "Support_Channel": channels,
-            "Resolution_Time_Hours": resolution_times,
-        }
-    )
-    return df
-
-
-def create_violinplot(df: pd.DataFrame) -> None:
-    """
-    Create a Seaborn violinplot and save chart.png as 512x512
-    (8x8 inches at 64 DPI).
-    """
-
-    # Professional Seaborn styling
-    sns.set_theme(style="whitegrid", context="talk")
-
-    # 8x8 inches @ 64 dpi -> 512x512 pixels
+    
+    # Create data with different resolution times per tier
+    tier1 = np.random.lognormal(mean=1.3, sigma=0.4, size=250)
+    tier2 = np.random.lognormal(mean=1.5, sigma=0.45, size=150)
+    tier3 = np.random.lognormal(mean=1.7, sigma=0.5, size=100)
+    
+    df = pd.DataFrame({
+        'Support_Tier': ['Tier 1']*250 + ['Tier 2']*150 + ['Tier 3']*100,
+        'Resolution_Time_Hours': np.concatenate([tier1, tier2, tier3])
+    })
+    
+    # Set professional Seaborn styling
+    sns.set_style("whitegrid")
+    sns.set_context("talk")
+    
+    # Create figure with specified size
     plt.figure(figsize=(8, 8))
-
+    
+    # Create violinplot
     sns.violinplot(
         data=df,
-        x="Support_Tier",
-        y="Resolution_Time_Hours",
-        hue="Support_Channel",
-        split=True,
-        inner="quartile",
+        x='Support_Tier',
+        y='Resolution_Time_Hours',
+        palette='Set2',
+        inner='quartile'
     )
-
-    plt.title("Support Resolution Time by Tier and Channel")
-    plt.xlabel("Support Tier")
-    plt.ylabel("Resolution Time (hours)")
-
-    # Move legend outside if needed (not required, but neat)
-    plt.legend(title="Channel", loc="upper right")
-
-    # Save exactly as per the guidelines
-    plt.savefig("chart.png", dpi=64, bbox_inches="tight")
+    
+    # Add titles and labels
+    plt.title('Support Resolution Time by Tier', fontsize=16, fontweight='bold')
+    plt.xlabel('Support Tier', fontsize=14)
+    plt.ylabel('Resolution Time (hours)', fontsize=14)
+    
+    # Save with specified parameters
+    plt.savefig('chart.png', dpi=64, bbox_inches='tight')
     plt.close()
-
-
-def main() -> None:
-    df = generate_synthetic_data()
-    create_violinplot(df)
-    print("Generated chart.png (512x512 using 8x8 @ 64 dpi)")
-
+    
+    # Resize to EXACTLY 512x512 pixels
+    img = Image.open('chart.png')
+    img_resized = img.resize((512, 512), Image.LANCZOS if hasattr(Image, 'LANCZOS') else 1)
+    img_resized.save('chart.png')
+    img.close()
+    img_resized.close()
+    
+    # Verify dimensions
+    verify = Image.open('chart.png')
+    w, h = verify.size
+    verify.close()
+    
+    print(f"Generated chart.png ({w}x{h} pixels)")
+    
+    if w == 512 and h == 512:
+        print("✓ Chart is exactly 512x512 pixels")
+    else:
+        print(f"⚠ Warning: Chart is {w}x{h}, expected 512x512")
 
 if __name__ == "__main__":
     main()
