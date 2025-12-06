@@ -44,7 +44,7 @@ def create_violinplot(df):
     sns.set_context("talk")
 
     # Figure size can be anything; we'll resize later
-    plt.figure(figsize=(6, 6))
+    plt.figure(figsize=(8, 8))
 
     sns.violinplot(
         data=df,
