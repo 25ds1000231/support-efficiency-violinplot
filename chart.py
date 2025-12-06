@@ -1,83 +1,83 @@
 # chart.py
-# Author: 25ds1000231
-# Email: 25ds1000231@ds.study.iitm.ac.in
-#
-# This script generates a Seaborn violinplot visualizing
-# support resolution time distributions across channels
-# for a customer support efficiency analysis.
 
-import numpy as np
 import pandas as pd
-import seaborn as sns
+import numpy as np
 import matplotlib.pyplot as plt
+import seaborn as sns
+
+# --- 1. Seaborn Best Practices: Set Style and Context ---
+# Set a professional style (e.g., 'whitegrid' for better readability)
+sns.set_style("whitegrid")
+# Set context for presentation-ready text size
+sns.set_context("talk") # 'talk' or 'poster' is great for presentations
+
+# --- 2. Data Generation: Create realistic synthetic data ---
+np.random.seed(42) # For reproducibility
+
+# Define the support channels and their typical response time distributions (in minutes)
+channels = ['Email', 'Live Chat', 'Phone']
+data_points = 500 # Total number of response times
+
+# Generate data for each channel reflecting typical efficiency:
+# Phone is usually fastest, Live Chat moderate, Email slowest/most variable
+email_times = np.random.normal(loc=120, scale=40, size=data_points)
+chat_times = np.random.normal(loc=15, scale=5, size=data_points)
+phone_times = np.random.normal(loc=5, scale=2, size=data_points)
+
+# Combine the data into a single DataFrame
+df_email = pd.DataFrame({'Response Time (Minutes)': email_times, 'Support Channel': 'Email'})
+df_chat = pd.DataFrame({'Response Time (Minutes)': chat_times, 'Support Channel': 'Live Chat'})
+df_phone = pd.DataFrame({'Response Time (Minutes)': phone_times, 'Support Channel': 'Phone'})
+
+df = pd.concat([df_email, df_chat, df_phone])
+
+# Ensure all response times are non-negative
+df['Response Time (Minutes)'] = df['Response Time (Minutes)'].apply(lambda x: max(0, x))
+
+# Filter out extreme outliers for cleaner visualization (e.g., email times > 300 mins)
+df = df[df['Response Time (Minutes)'] < 300]
 
 
-def generate_synthetic_data(n_per_channel: int = 300) -> pd.DataFrame:
-    """
-    Generate realistic synthetic data for support efficiency analysis.
+# --- 3. Create Violinplot and Set Figure Size ---
+# Set figure size for the required 512x512 pixel output. 
+# At default DPI (100), 5.12x5.12 inches would work. To use dpi=64, we need:
+# 512 pixels / 64 dpi = 8 inches.
+plt.figure(figsize=(8, 8)) 
 
-    - Support_Channel: Email, Chat, Phone, Social Media
-    - Resolution_Time_Hours: positive continuous values (hours)
-    """
-    rng = np.random.default_rng(42)
+# Create the violin plot
+# 'hue' is not needed here. Use 'x' for channel and 'y' for time.
+# 'palette' for professional colors. 'inner="quartile"' shows the median and IQR.
+sns.violinplot(
+    x='Support Channel', 
+    y='Response Time (Minutes)', 
+    data=df, 
+    palette="viridis", # A good professional, sequential palette
+    inner="quartile",
+    linewidth=1 # Thicker lines for better appearance
+)
 
-    channels = [
-        ("Email", 12, 6),         # Slower, more spread
-        ("Chat", 4, 2),           # Fast, narrower
-        ("Phone", 6, 3),          # Medium speed
-        ("Social Media", 10, 5),  # Slightly slower and variable
-    ]
+# --- 4. Style the Chart: Titles, Labels, and Ticks ---
+plt.title(
+    "Customer Support Response Time Distribution by Channel", 
+    fontsize=18, 
+    weight='bold'
+)
+plt.xlabel("Support Channel", fontsize=14)
+plt.ylabel("Response Time (Minutes)", fontsize=14)
 
-    records = []
+# Set specific y-axis limits to focus on the key distribution
+# plt.ylim(0, 300) 
 
-    for channel, mean, std in channels:
-        # Generate normal data
-        times = rng.normal(loc=mean, scale=std, size=n_per_channel)
-        # Ensure times are positive and reasonable (min 0.25 hours)
-        times = np.clip(times, 0.25, None)
+# --- 5. Save Chart: Exactly 512x512 pixels ---
+# dpi=64 and figsize=(8, 8) ensures 8*64 = 512 pixels.
+# bbox_inches='tight' often crops white space, which can interfere with exact pixel size. 
+# A more reliable way for exact size is to manually set the figure size and save without 'tight',
+# but the requirement states to use 'bbox_inches='tight'. We will follow the instruction:
+plt.savefig(
+    'chart.png', 
+    dpi=64, 
+    bbox_inches='tight' # Following instruction, though it might cause a slight deviation if content is too large
+) 
 
-        for t in times:
-            records.append(
-                {
-                    "Support_Channel": channel,
-                    "Resolution_Time_Hours": float(t),
-                }
-            )
-
-    return pd.DataFrame.from_records(records)
-
-
-if __name__ == "__main__":
-    # 1. Generate data
-    df = generate_synthetic_data()
-
-    # 2. Professional Seaborn styling
-    sns.set_theme(style="whitegrid", context="talk")
-
-    # 3. Create 8x8 inch figure → 512x512 px at 64 dpi
-    plt.figure(figsize=(8, 8))
-
-    # 4. ***Main violinplot*** (this is what the validator expects)
-    ax = sns.violinplot(
-        data=df,
-        x="Support_Channel",
-        y="Resolution_Time_Hours",
-        inner="quartile",   # show quartiles inside
-        cut=0,              # don't extend beyond data
-        scale="width",      # comparable widths
-        palette="Set2",     # nice professional palette
-    )
-
-    # 5. Titles and labels
-    ax.set_title("Customer Support Resolution Time by Channel", fontsize=18, pad=16)
-    ax.set_xlabel("Support Channel", fontsize=14)
-    ax.set_ylabel("Resolution Time (hours)", fontsize=14)
-
-    # 6. Start y-axis at 0 for interpretation
-    max_time = df["Resolution_Time_Hours"].max()
-    ax.set_ylim(0, max_time * 1.1)
-
-    # 7. Save exactly 512x512 px
-    plt.tight_layout()
-    plt.savefig("chart.png", dpi=64)
-    plt.close()
+plt.close() # Close the figure to free up memory
+print("chart.png created successfully with target 512x512 pixel dimensions.")
