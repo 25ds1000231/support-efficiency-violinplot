@@ -1,7 +1,13 @@
-# Support Efficiency Violinplot
+# Support Efficiency Violin Plot: Response Time Distribution
 
-This repository contains a Seaborn violinplot visualization created for the customer analytics project: **Response Time Distribution by Support Channel**.
+## Project Overview
+This project visualizes the distribution and density of customer support response times across different channels (Email, Live Chat, Phone) using a professional-grade Seaborn violin plot. This analysis provides critical insights for support efficiency analysis for Bosco Fay and Mohr's retail client.
 
-The Python script `chart.py` generates synthetic customer support resolution time data and produces a professional 512×512 violinplot (`chart.png`) as required for the analysis.
+## Repository Contents
+* `chart.py`: Python script to generate the visualization.
+* `chart.png`: The resulting 512x512 pixel violin plot.
 
-**Student Email:** 25ds1000231@ds.study.iitm.ac.in
+## Contact Information
+**25ds1000231@ds.study.iitm.ac.in**
+
+25ds1000231@ds.study.iitm.ac.in
