@@ -8,19 +8,20 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
-from PIL import Image
 
 
-def generate_data(n_samples=500):
+def generate_data(n_samples: int = 500) -> pd.DataFrame:
     """Generate synthetic support efficiency data."""
     np.random.seed(42)
 
+    # Simulate support tiers with realistic proportions
     tiers = np.random.choice(
         ["Tier 1", "Tier 2", "Tier 3"],
         size=n_samples,
         p=[0.5, 0.3, 0.2],
     )
 
+    # Lognormal distribution to mimic skewed resolution times
     resolution_time = np.random.lognormal(
         mean=1.5,  # center
         sigma=0.5,  # spread
@@ -36,14 +37,14 @@ def generate_data(n_samples=500):
     return df
 
 
-def create_violinplot(df):
+def create_violinplot(df: pd.DataFrame) -> None:
     """Create a Seaborn violinplot and save chart.png as 512x512."""
 
     # Professional Seaborn styling
     sns.set_style("whitegrid")
     sns.set_context("talk")
 
-    # Figure size can be anything; we'll resize later
+    # 8x8 inches with dpi=64 -> 512x512 pixels
     plt.figure(figsize=(8, 8))
 
     sns.violinplot(
@@ -59,21 +60,15 @@ def create_violinplot(df):
     plt.xlabel("Support Tier")
     plt.ylabel("Resolution Time (hours)")
 
-    # Save a temporary image first
-    temp_file = "chart_temp.png"
-    plt.savefig(temp_file, dpi=100)
+    # Save directly as required by the guidelines
+    plt.savefig("chart.png", dpi=64, bbox_inches="tight")
     plt.close()
 
-    # Force final PNG to be exactly 512x512
-    img = Image.open(temp_file)
-    img = img.resize((512, 512), Image.LANCZOS)
-    img.save("chart.png")
 
-
-def main():
+def main() -> None:
     df = generate_data()
     create_violinplot(df)
-    print("Generated chart.png (512x512)")
+    print("Generated chart.png (512x512 using 8x8 @ 64 dpi)")
 
 
 if __name__ == "__main__":
