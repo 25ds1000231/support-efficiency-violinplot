@@ -6,6 +6,12 @@ import seaborn as sns
 import seaborn.objects as so
 from PIL import Image
 
+import seaborn as sns
+import matplotlib.pyplot as plt
+import pandas as pd
+import numpy as np
+from PIL import Image
+
 # ------------------------------
 # Data Generation (Realistic)
 # ------------------------------
@@ -39,11 +45,11 @@ sns.set_style("whitegrid")
 sns.set_context("talk")
 
 # ------------------------------
-# Figure Setup (slightly smaller so bbox_inches does not exceed 512 px)
+# Figure Setup (slightly smaller to account for tight bbox)
 # ------------------------------
 
-fig = plt.figure(figsize=(7.6, 7.6))  # NOT 8×8 — gives room for tight bounding box
-plt.rcParams['savefig.dpi'] = 64
+fig = plt.figure(figsize=(7.6, 7.6))  # slightly smaller than 8x8
+plt.rcParams['savefig.dpi'] = 100      # requested dpi
 
 # ------------------------------
 # Violin Plot
@@ -59,27 +65,33 @@ sns.violinplot(
     linewidth=1.2,
 )
 
-plt.title("Customer Support Response Time Distribution by Channel",
-          fontsize=18, fontweight="bold")
+plt.title(
+    "Customer Support Response Time Distribution by Channel",
+    fontsize=18, fontweight="bold"
+)
 plt.xlabel("Support Channel", fontsize=14)
 plt.ylabel("Response Time (minutes)", fontsize=14)
 plt.grid(axis="y", linestyle="--", alpha=0.6)
 
 # ------------------------------
-# Save WITH bbox_inches='tight'
+# Save Raw Plot with bbox_inches='tight'
 # ------------------------------
 
-temp_path = "chart_raw.png"
-plt.savefig(temp_path, dpi=64, bbox_inches='tight')
-plt.close()
+temp_path = "seaborn_relplot_temp.png"
+plt.savefig(temp_path, dpi=100, bbox_inches='tight')
 
 # ------------------------------
-# FORCE EXACT 512×512 FINAL IMAGE
+# Resize to EXACT 512x512 pixels
 # ------------------------------
 
 img = Image.open(temp_path)
 img = img.resize((512, 512), Image.LANCZOS)
-img.save("chart.png")
+img.save("seaborn_relplot_512x512.png")
 
-print("Chart saved as chart.png (exact 512x512 px, with bbox_inches='tight')")
+# ------------------------------
+# Display Plot
+# ------------------------------
 
+plt.show()
+
+print("Chart saved as seaborn_relplot_512x512.png (exact 512x512 px)")
