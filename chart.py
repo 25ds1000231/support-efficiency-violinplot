@@ -12,6 +12,11 @@ import pandas as pd
 import numpy as np
 from PIL import Image
 
+import seaborn as sns
+import matplotlib.pyplot as plt
+import pandas as pd
+import numpy as np
+
 # ------------------------------
 # Data Generation (Realistic)
 # ------------------------------
@@ -45,17 +50,10 @@ sns.set_style("whitegrid")
 sns.set_context("talk")
 
 # ------------------------------
-# Figure Setup (slightly smaller to account for tight bbox)
+# Create Violin Plot
 # ------------------------------
 
-fig = plt.figure(figsize=(7.6, 7.6))  # slightly smaller than 8x8
-plt.rcParams['savefig.dpi'] = 100      # requested dpi
-
-# ------------------------------
-# Violin Plot
-# ------------------------------
-
-sns.violinplot(
+g = sns.violinplot(
     data=df,
     x="Channel",
     y="ResponseTime",
@@ -74,24 +72,17 @@ plt.ylabel("Response Time (minutes)", fontsize=14)
 plt.grid(axis="y", linestyle="--", alpha=0.6)
 
 # ------------------------------
-# Save Raw Plot with bbox_inches='tight'
+# Adjust Figure Size for EXACT 512x512
 # ------------------------------
 
-temp_path = "seaborn_relplot_temp.png"
-plt.savefig(temp_path, dpi=100, bbox_inches='tight')
+fig = g.figure
+fig.set_size_inches(5.12, 5.12)  # 5.12 inches × 100 dpi = 512 px
 
 # ------------------------------
-# Resize to EXACT 512x512 pixels
+# Save Chart
 # ------------------------------
 
-img = Image.open(temp_path)
-img = img.resize((512, 512), Image.LANCZOS)
-img.save("seaborn_relplot_512x512.png")
-
-# ------------------------------
-# Display Plot
-# ------------------------------
-
+plt.savefig("seaborn_relplot_512x512.png", dpi=100, bbox_inches='tight')
 plt.show()
 
-print("Chart saved as seaborn_relplot_512x512.png (exact 512x512 px)")
+print("Chart saved as seaborn_relplot_512x512.png (exac
