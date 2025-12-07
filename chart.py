@@ -1,88 +1,65 @@
-import numpy as np
-import pandas as pd
-import matplotlib as mpl
-import matplotlib.pyplot as plt
-import seaborn as sns
-import seaborn.objects as so
-from PIL import Image
-
-import seaborn as sns
-import matplotlib.pyplot as plt
-import pandas as pd
-import numpy as np
-from PIL import Image
-
 import seaborn as sns
 import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
 
-# ------------------------------
-# Data Generation (Realistic)
-# ------------------------------
-
-np.random.seed(42)
-
-channels = ["Email", "Chat", "Phone", "Social Media"]
-
-email_times = np.random.lognormal(mean=np.log(35), sigma=0.4, size=250)
-chat_times = np.random.gamma(shape=4, scale=3, size=250)
-phone_times = np.random.normal(loc=22, scale=6, size=250)
-phone_times += np.abs(np.random.normal(0, 4, size=250)) * 0.3
-fast_auto = np.random.normal(loc=10, scale=3, size=150)
-slow_human = np.random.normal(loc=45, scale=12, size=100)
-social_times = np.concatenate([fast_auto, slow_human])
-
-df = pd.DataFrame({
-    "Channel": np.repeat(channels, 250),
-    "ResponseTime": np.concatenate([
-        email_times, chat_times, phone_times, social_times
-    ])
-})
-
-df["ResponseTime"] = df["ResponseTime"].clip(lower=0)
-
-# ------------------------------
-# Seaborn Styling
-# ------------------------------
-
+# Set professional Seaborn style and context for presentations
 sns.set_style("whitegrid")
-sns.set_context("talk")
+sns.set_context("talk", font_scale=0.9)
 
-# ------------------------------
-# Create Violin Plot
-# ------------------------------
+# Generate realistic synthetic data for support response times (minutes)
+np.random.seed(42)
+channels = ['Email', 'Chat', 'Phone', 'Social', 'Ticket']
+n_samples = 500
 
-g = sns.violinplot(
-    data=df,
-    x="Channel",
-    y="ResponseTime",
-    palette="Set2",
-    cut=0,
-    bw=0.25,
-    linewidth=1.2,
-)
+data = []
+for channel in channels:
+    if channel == 'Email':
+        # Longer tail for email responses
+        times = np.random.exponential(120, n_samples//5) + np.random.normal(60, 20, n_samples//5)
+    elif channel == 'Chat':
+        # Fastest responses
+        times = np.random.exponential(8, n_samples//5) + np.random.normal(5, 2, n_samples//5)
+    elif channel == 'Phone':
+        # Moderate with some outliers
+        times = np.random.exponential(25, n_samples//5) + np.random.normal(15, 8, n_samples//5)
+    elif channel == 'Social':
+        # Variable social media responses
+        times = np.random.exponential(90, n_samples//5) + np.random.normal(45, 25, n_samples//5)
+    else:  # Ticket
+        # Longest processing
+        times = np.random.exponential(240, n_samples//5) + np.random.normal(180, 60, n_samples//5)
+    
+    times = np.clip(times, 0, 1440)  # Clip to 24 hours max
+    for time in times:
+        data.append({'Channel': channel, 'Response_Time_Minutes': time})
 
-plt.title(
-    "Customer Support Response Time Distribution by Channel",
-    fontsize=18, fontweight="bold"
-)
-plt.xlabel("Support Channel", fontsize=14)
-plt.ylabel("Response Time (minutes)", fontsize=14)
-plt.grid(axis="y", linestyle="--", alpha=0.6)
+df = pd.DataFrame(data)
 
-# ------------------------------
-# Adjust Figure Size for EXACT 512x512
-# ------------------------------
+# Create figure exactly 512x512 pixels (8x8 inches at 64 DPI)
+fig, ax = plt.subplots(figsize=(8, 8))
 
-fig = g.figure
-fig.set_size_inches(5.12, 5.12)  # 5.12 inches × 100 dpi = 512 px
+# Create violinplot with professional color palette
+sns.violinplot(data=df, x='Channel', y='Response_Time_Minutes', 
+               palette='Set2', ax=ax, inner='quartile')
 
-# ------------------------------
-# Save Chart
-# ------------------------------
+# Customize for executive presentation
+ax.set_title('Customer Support Response Time Distribution by Channel\n(Minutes)', 
+             fontsize=16, fontweight='bold', pad=20)
+ax.set_ylabel('Response Time (Minutes)', fontsize=12, fontweight='bold')
+ax.set_xlabel('Support Channel', fontsize=12, fontweight='bold')
 
-plt.savefig("seaborn_relplot_512x512.png", dpi=100, bbox_inches='tight')
-plt.show()
+# Rotate x labels for readability
+plt.xticks(rotation=45)
 
-print("Chart saved as seaborn_relplot_512x512.png (exac
+# Add value annotations on violins
+medians = df.groupby('Channel')['Response_Time_Minutes'].median()
+for i, channel in enumerate(channels):
+    ax.text(i, medians[channel] + 10, f'Med: {medians[channel]:.0f}min', 
+            ha='center', va='bottom', fontweight='bold', fontsize=10)
+
+plt.tight_layout()
+
+# Save EXACTLY 512x512 pixels (8in * 64dpi = 512px)
+plt.savefig('chart.png', dpi=64, bbox_inches='tight', pad_inches=0.1)
+plt.close()
